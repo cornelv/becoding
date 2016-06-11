@@ -1,10 +1,15 @@
 from django import forms
 from django.contrib.auth import get_user_model
+from django.forms import ModelMultipleChoiceField
 
 from crispy_forms_foundation.forms import FoundationModelForm
 
 from .models import Project, Ticket
 
+
+class AssigneesChoiceFields(ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return obj.email
 
 class BaseTrackerForm(FoundationModelForm):
     def __init__(self, user=None, title=None, *args, **kwargs):
@@ -42,7 +47,7 @@ class ProjectForm(BaseTrackerForm):
 
 
 class TicketForm(BaseTrackerForm):
-    assignees = forms.ModelMultipleChoiceField(queryset=None, required=False)
+    assignees = AssigneesChoiceFields(queryset=None, required=False)
 
     class Meta:
         model = Ticket
