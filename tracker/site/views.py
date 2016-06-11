@@ -2,6 +2,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView, CreateView, UpdateView, ListView
+from django.db.models import Count
 
 from .forms import ProjectForm, TicketForm
 from .models import Project, Ticket
@@ -46,6 +47,26 @@ my_tickets_view = MyTicketsView.as_view()
 class ProjectListView(ListView):
     model = Project
     template_name = "site/project_list.html"
+
+    def get_context_data(self, **kwargs):
+
+        context = super(ProjectListView, self).get_context_data(**kwargs)
+
+        if not self.request.user.is_anonymous():
+
+            user_projects = Ticket.objects.filter(assignees=self.request.user).values_list('project_id', flat=True).order_by('project_id').distinct('project_id')
+
+            for project in context['project_list']:
+                if project.id in user_projects:
+                    project.has_tickets = 1
+                else:
+                    project.has_tickets = 0
+
+            project_list = sorted(context['project_list'], key=lambda x: x.has_tickets, reverse=True)
+
+            context.update({"project_list": project_list})
+
+        return context
 
 
 project_list_view = ProjectListView.as_view()
