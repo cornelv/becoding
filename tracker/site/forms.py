@@ -62,3 +62,10 @@ class TicketForm(BaseTrackerForm):
     def pre_save(self, instance):
         instance.created_by = self.user
         instance.project = self.project
+
+
+class DeleteTicketForm(BaseTrackerForm):
+    
+    class Meta:
+        model = Ticket
+        fields = []
